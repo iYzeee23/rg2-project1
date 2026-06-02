@@ -36,6 +36,9 @@ public class CubeSphere {
     private String shadersPath;
 
     // https://wikis.khronos.org/opengl/Cubemap_Texture
+    // pamtimo donji levi ugao svake strane, gledano spolja
+    // spolja zato sto se nalazimo van zemlje
+    // kod skyboxa je bilo obrnuto
     private static final float[][] FACE_ORIGINS = {
         { -1, -1,  1 }, // +Z
         {  1, -1, -1 }, // -Z
@@ -141,14 +144,19 @@ public class CubeSphere {
 
                     // posto imamo normalnu, potrebna nam je tangenta/bitangenta za TBN matricu
                     // posto shader koristi normalu i tangentu, ovde cemo da formiramo tangentu
-                    // bitangentnu mozemo da izracunamo u shaderu kao cross product normale i tangente
+                    // bitangentnu racunamo u shaderu kao cross product normale i tangente
+
+                    // slika u folderu
+                    // theta == ugao od +X ka -Z osi, u ravni XZ
+                    // phi == ugao od -Y ose ka vektoru pozicije
 
                     // na sferi, pozicija tacke je:
-                    // x = cos(theta)
-                    // y = -cos(phi)
-                    // z = -sin(theta)
+                    // x = cos(theta) * r
+                    // y = -cos(phi) * r
+                    // z = -sin(theta) * r
 
                     // tangenta je izvod pozicije po theti, jer theta kontrolise kretanje oko Y ose
+                    // kada racunamo tangentu, tretiramo r kao const, pa se ono skrati
                     // tx = -sin(theta)
                     // ty = 0
                     // tz = -cos(theta)
@@ -340,6 +348,8 @@ public class CubeSphere {
         gl.glEnableVertexAttribArray(3);
 
         // index buffer
+        // ELEMENT_ARRAY_BUFFER se ne tretira kao vertex atribut, vec kao poseban buffer koji sadrzi indekse
+        // zato ne moramo da ga povezuemo sa lokacijom atributa, kao sto radimo sa ostalim VBO-ovima
         IntBuffer idxIntBuf = IntBuffer.allocate(1);
         gl.glGenBuffers(1, idxIntBuf);
         indexBuffer = idxIntBuf.get(0);
@@ -408,7 +418,7 @@ public class CubeSphere {
         normalTransform.get(mat3Array);
         gl.glUniformMatrix3fv(ntLoc, 1, false, mat3Array, 0);
 
-        // transformacija svetla u prostoru kamere koristeci samo view matricu
+        // transformacija svetla iz prostora sveta u prostor kamere
         // svetlo je u prostoru sveta i ne treba da rotira sa zemljom
         Matrix4f viewMatrix = camera.getViewMatrix();
         Vector3f lightEye = new Vector3f();

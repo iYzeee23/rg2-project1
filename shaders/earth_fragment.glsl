@@ -12,17 +12,23 @@ uniform sampler2D normalMap;
 uniform sampler2D specularMap;
 
 void main() {
+    // JPG slika nema kanal, tj uvek je neprozirna (JPG je compressed)
+    // PNG moze da ima transparentnost (PNG je lossless)
     vec3 earthColor = texture(earthTexture, fragUV).rgb;
+
+    // grayscale slika (crno bela), pa je svaki kanal isti
     float specIntensity = texture(specularMap, fragUV).r;
 
     // konverzija iz tangent prostora u prostor kamere
+    // texture uvek vraca normalizovane vrednosti, a ne od 0 do 255
+    // normal tangent == normala u tangent space-u
     vec3 normalTangent = texture(normalMap, fragUV).rgb * 2.0 - 1.0;
     vec3 normal = normalize(TBN * normalTangent);
 
     // svetlo je vec u eye space-u, ne treba transformisati
     vec3 lightPosEye = LightPosition;
 
-    // smerovi za osvetljenje
+    // smerovi za osvetljenje (krajnja tacka - pocetna tacka)
     vec3 lightVec = normalize(lightPosEye - fragPosEyeSpace);
     vec3 viewVec  = normalize(-fragPosEyeSpace);
     vec3 reflected = reflect(-lightVec, normal);

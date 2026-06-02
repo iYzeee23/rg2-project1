@@ -57,13 +57,13 @@ public class Skybox {
     }
 
     private void buildGeometry(GL4 gl) {
-        // vao
+        // vao == vertex array object
         IntBuffer intBuf = IntBuffer.allocate(1);
         gl.glGenVertexArrays(1, intBuf);
         vao = intBuf.get(0);
         gl.glBindVertexArray(vao);
 
-        // vbo
+        // vbo == vertex buffer object
         intBuf.rewind();
         gl.glGenBuffers(1, intBuf);
         vbo = intBuf.get(0);
@@ -108,15 +108,25 @@ public class Skybox {
 
     public void render(GL4 gl, Camera camera) {
         // skybox je uvek najdalje
+        // i bez ovoga bi radilo jer renderujemo skybox kao prvi
+        // ukoliko bismo ga renderovali nakon zemlje, morali bismo da iskljucimo
+        // svakako je dobra praksa iskljuciti kod beskonacno dalekih objekata
+        // takodje, ako nije potrebno, poboljsavamo performanse
         gl.glDepthMask(false);
         
-        // iskljuci culling jer smo UNUTAR kocke (vidimo unutrasnju stranu)
+        // iskljuci culling jer smo unutar kocke (vidimo unutrasnju stranu)
+        // radilo bi i bez ovoga, zato sto mi nikada ne vidimo back face zapravo
+        // svakako, stedimo performanse jer ne crta nista
+        // ako bismo kameru stavili van kocke, morali bismo da iskljucimo culling
         gl.glDisable(GL4.GL_CULL_FACE);
 
         gl.glUseProgram(shaderProgram);
 
         // skybox ne prati kameru, jer je beskonacno daleko
         // kada zumiramo, zelimo da ostane na istoj daljini
+        // sustinski, iskljucili smo translaciju kamere po svim osama
+        // na ovaj nacin, nebo se nikada ne priblizava, vec samo zemlja
+        // mCR == column major == kolona pa red
         Matrix4f view = camera.getViewMatrix();
         view.m30(0); view.m31(0); view.m32(0);
 

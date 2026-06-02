@@ -37,18 +37,23 @@ public class EarthSimulation implements GLEventListener, KeyListener, MouseListe
     public void init(GLAutoDrawable drawable) {
         GL4 gl = drawable.getGL().getGL4();
 
+        // uvek palimo depth test na pocetku
         gl.glEnable(GL4.GL_DEPTH_TEST);
+
         // za skybox, dubina 1.0 mora da prodje test
         gl.glDepthFunc(GL4.GL_LEQUAL);
+
         // bez ovoga vidljivi su savovi izmedju strana cubemap-a
         gl.glEnable(GL4.GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
         // CCW namotaj je front, zadnja strana se ne crta
         gl.glEnable(GL4.GL_CULL_FACE);
+
+        // ocisti boju u color bufferu
         gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         camera = new Camera();
 
-        // parametri: rezolucija=64, poluprecnik=1.0, jacina displacement-a=0.03
         String shadersPath = BASE_DIR + "shaders/";
         earth = new CubeSphere(64, 1.0f, 0.03f, ASSETS_PATH, shadersPath);
         earth.init(gl);
@@ -171,7 +176,6 @@ public class EarthSimulation implements GLEventListener, KeyListener, MouseListe
             int dy = e.getY() - lastMouseY;
 
             camera.rotateHorizontal(dx);
-            // invertovano, drag gore znaci da kamera ide gore
             camera.rotateVertical(-dy);
 
             lastMouseX = e.getX();
@@ -181,8 +185,9 @@ public class EarthSimulation implements GLEventListener, KeyListener, MouseListe
 
     @Override
     public void mouseWheelMoved(MouseEvent e) {
-        // rotation[1] je vertikalna rotacija tocka misa
         float[] rotation = e.getRotation();
+
+        // rotation[1] je vertikalna rotacija tocka misa
         camera.zoom(rotation[1]);
     }
 

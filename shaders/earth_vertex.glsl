@@ -19,14 +19,17 @@ void main() {
     fragPosEyeSpace = (MVTransform * vec4(vertexPosition, 1.0)).xyz;
     gl_Position = MVPTransform * vec4(vertexPosition, 1.0);
 
-    // tutorial:  T = normalize(model * vec4(aTangent, 0.0))
-    // nasa impl: T = normalize(NormalTransform * vertexTangent)
+    // tutorial: T = normalize(model * vec4(aTangent, 0.0)) => world space
+    // nasa impl: T = normalize(NormalTransform * vertexTangent) => eye space
     // razlika: mi koristimo NormalTransform = transpose(inverse(MV))
+    // fora je sto ne mozemo samo MV da uradimo kod tangenti, nego mora transpose(inverse())
+    // razlog za eye space => osvetljenje racunamo u ovom koord sistemu
     vec3 N = normalize(NormalTransform * vertexNormal);
     vec3 T = normalize(NormalTransform * vertexTangent);
 
     // gram-schmidt: T = T - (T . N) * N
-    // optimizacija koja osigurava da su T i N ortogonalni
+    // nakon NormalTransform, T i N vise nisu kompletno ortogonalni
+    // optimizacija koja osigurava da su T i N ortogonalni, tacno pod 90 stepeni
     T = normalize(T - dot(T, N) * N);
 
     // tutorial: aBitangent kao ulaz
